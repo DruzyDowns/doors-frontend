@@ -49,6 +49,9 @@ export default function Home() {
     canvasRef.current.height = width;
   }, []);
   const [currentAccount, setCurrentAccount] = useState("");
+  const [miningStarted, setMiningStarted] = useState(false);
+  const [miningComplete, setMiningComplete] = useState(false);
+  const [mintMessage, setMintMessage] = useState(false);
 
   const checkIfWalletIsConnected = async () => {
     const { ethereum } = window;
@@ -133,8 +136,8 @@ export default function Home() {
         // If you're familiar with webhooks, it's very similar to that!
         connectedContract.on("doorMinted", (from, tokenId) => {
           console.log(from, tokenId.toNumber());
-          alert(
-            `Hey there! We've minted your NFT and sent it to your wallet. It may be blank right now. It can take a few minutes to show up on Rarible. Here's the link: https://rinkeby.rarible.com/token/${CONTRACT_ADDRESS}:${tokenId.toNumber()}`
+          setMintMessage(
+            `Success! 🤝 Minted and sent to wallet on Rinkeby network. It can take a few minutes to show up on Rarible. Here's the link: https://rinkeby.rarible.com/token/${CONTRACT_ADDRESS}:${tokenId.toNumber()}`
           );
         });
 
@@ -164,11 +167,14 @@ export default function Home() {
         let nftTxn = await connectedContract.openDoors();
 
         console.log("Mining...please wait.");
+        setMiningStarted(true);
+
         await nftTxn.wait();
 
         console.log(
           `Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`
         );
+        setMiningComplete(true);
       } else {
         console.log("Ethereum object doesn't exist!");
       }
@@ -223,11 +229,23 @@ export default function Home() {
             ) : (
               <button
                 onClick={askContractToMintNft}
-                className="p-2 my-2 text-xl uppercase tracking-widest border border-current transition hover:text-white"
+                className={`p-2 my-2 text-xl uppercase tracking-widest border border-current transition hover:text-white ${
+                  miningStarted && !miningComplete
+                    ? "animate-pulse text-white"
+                    : "animate-none"
+                }`}
               >
                 Mint NFT
               </button>
             )}
+          </div>
+          <div>
+            {miningStarted && !miningComplete ? (
+              <p>mining in process...</p>
+            ) : (
+              <p></p>
+            )}
+            {miningComplete ? <p>Success!</p> : <p></p>}
           </div>
           <div className="footer-container">
             <a
@@ -237,7 +255,7 @@ export default function Home() {
               rel="noreferrer"
             >
               <button className="p-2 my-2 uppercase tracking-widest text-white border border-current">
-                🌊 View Collection on Rarible
+                🌈 View Collection on Rarible 🌈
               </button>
             </a>
             <div></div>
